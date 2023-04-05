@@ -45,18 +45,18 @@ class FindGenMatrix:
             for bit in syndrome:
                 num += 2*num + bit
             return num
-        syndrome_dict = {}
+        syndrome_set = set()
         error = np.zeros(cls.N, dtype='int8')
         syndrome = par_check_mtx@error
         syndrome_num = syndrome_to_num(syndrome)
-        syndrome_dict[syndrome_num] = error
+        syndrome_set.add(syndrome_num)
         for i in range(cls.N):
             error[i] = 1
             syndrome = par_check_mtx@error
             syndrome_num = syndrome_to_num(syndrome)
-            if syndrome_num in syndrome_dict:
+            if syndrome_num in syndrome_set:
                 return False
-            syndrome_dict[syndrome_num] = error.copy()
+            syndrome_set.add(syndrome_num)
             error[i] = 0
         for i in range(1, cls.N):
             error[i] = 1
@@ -64,9 +64,9 @@ class FindGenMatrix:
                 error[j] = 1
                 syndrome = par_check_mtx@error
                 syndrome_num = syndrome_to_num(syndrome)
-                if syndrome_num in syndrome_dict:
+                if syndrome_num in syndrome_set:
                     return False
-                syndrome_dict[syndrome_num] = error.copy()
+                syndrome_set.add(syndrome_num)
                 error[j] = 0
             error[i] = 0
         return True
