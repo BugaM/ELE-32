@@ -1,13 +1,15 @@
 from bsc import bsc
 from hamming import Hamming
+from guerrabuga import GuerraBuga
 import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib
 
 
-SIZE = 1000000
-K = 4
+SIZE = 1000012
+HAMMING_K = 4
+GUERRA_BUGA_K = 13
 P = [0.5,0.2,0.1]
 
 
@@ -31,21 +33,28 @@ def bit_error_rate(info_bits, estimated_bits):
 
 information_bits = np.random.randint(2, size = SIZE)
 
-blocks = np.split(information_bits, SIZE/K)
+hamming_blocks = np.split(information_bits, SIZE/HAMMING_K)
+gb_blocks = np.split(information_bits, SIZE/GUERRA_BUGA_K)
 
 
 probabilities = get_probabilities(P)
 
 pe_hamming = []
+pe_gb = []
 pe_no_encoding = []
 for p in probabilities:
       hamming_decoded = []
-      for block in blocks:
+      gb_decoded = []
+      for block in hamming_blocks:
             encoded = Hamming.encode(block)
             noised_signal = bsc(encoded, p) 
             hamming_decoded.append(Hamming.decode(noised_signal))
+      for block in gb_blocks:
+            encoded = GuerraBuga.encode(block)
+            noised_signal = bsc(encoded, p) 
+            gb_decoded.append(GuerraBuga.decode(noised_signal))
       pe_hamming.append(bit_error_rate(information_bits, np.concatenate(hamming_decoded).ravel()))
-
+      pe_gb.append(bit_error_rate(information_bits, np.concatenate(gb_decoded).ravel()))
       noised_no_encoding = bsc(information_bits, p)
       pe_no_encoding.append(bit_error_rate(information_bits, noised_no_encoding))
 
@@ -61,7 +70,9 @@ ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
 plt.xlabel("p")
 plt.ylabel("Pe")
 
-plt.plot(probabilities, pe_hamming)
-plt.plot(probabilities, probabilities)
+plt.plot(probabilities, pe_hamming, label="Hamming")
+plt.plot(probabilities, pe_gb, label="GB")
+plt.plot(probabilities, probabilities, label="No encoding")
+plt.legend()
 
 plt.show()

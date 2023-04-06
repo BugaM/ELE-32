@@ -3,6 +3,76 @@ from math import inf
 
 import numpy as np
 
+class GuerraBuga:
+    """
+    Class for encoding and decoding 
+    """
+    K = 13 # Number of message bits
+    N = K + 8
+
+    with open("gen_mtx.npy", "rb") as f:
+        gen_matrix = np.load(f)
+    with open("par_check_mtx.npy", "rb") as f:
+        parity_check_matrix = np.load(f)
+
+    closest_errors = None
+
+    @classmethod
+    def encode(cls, half_byte:np.array):
+        return (half_byte@cls.gen_matrix)%2
+
+    @classmethod
+    def get_id(cls, bits):
+            num = 0
+            for bit in bits:
+                num += 2*num + bit
+            return num
+
+    @classmethod
+    def decode(cls, hamming_code:np.array):
+        check = (cls.parity_check_matrix@hamming_code)%2
+        check_id = cls.get_id(check)
+        if not cls.closest_errors:
+            cls.create_closest_errors()
+        error = cls.closest_errors[check_id]
+        if error != []:
+            return (hamming_code^error)[:cls.K]
+        else:
+            return hamming_code[:cls.K]
+
+    @classmethod
+    def create_closest_errors(cls):
+        closest_errors = 2**(cls.N)*[[]]
+        code = np.array([0]*cls.N, dtype='int8')
+        # 0 errors
+        closest_errors[0] = code.copy()
+        # 1 error:
+        for i in range(len(code)):
+            code[i] = 1
+            check = (cls.parity_check_matrix@code)%2
+            check_id = cls.get_id(check)
+            closest_errors[check_id] = code.copy()
+            code[i] = 0
+        # 2 errors:
+        for i in range(len(code)):
+            code[i]= 1
+            for j in range(i):
+                code[j]= 1
+                check = (cls.parity_check_matrix@code)%2
+                check_id = cls.get_id(check)
+                # print(check_id)
+                # print(code)
+                # break
+                closest_errors[check_id] = code.copy()
+                code[j] = 0
+            code[i] = 0
+        cls.closest_errors = closest_errors
+        # with open('closest_errors_mtx.npy', 'wb') as closest_errors_file:
+        #             np.save(closest_errors_file, closest_errors)
+        return closest_errors
+
+
+
 class FindGenMatrix:
     """
     Finds a suitable generator matrix for the block code.
@@ -47,12 +117,12 @@ class FindGenMatrix:
             return num
         syndrome_dict = {}
         error = np.zeros(cls.N, dtype='int8')
-        syndrome = par_check_mtx@error
+        syndrome = (par_check_mtx@error)%2
         syndrome_num = syndrome_to_num(syndrome)
         syndrome_dict[syndrome_num] = error
         for i in range(cls.N):
             error[i] = 1
-            syndrome = par_check_mtx@error
+            syndrome = (par_check_mtx@error)%2
             syndrome_num = syndrome_to_num(syndrome)
             if syndrome_num in syndrome_dict:
                 return False
@@ -62,7 +132,7 @@ class FindGenMatrix:
             error[i] = 1
             for j in range(i):
                 error[j] = 1
-                syndrome = par_check_mtx@error
+                syndrome = (par_check_mtx@error)%2
                 syndrome_num = syndrome_to_num(syndrome)
                 if syndrome_num in syndrome_dict:
                     return False
@@ -79,6 +149,8 @@ class FindGenMatrix:
         i = 0
         while i < max_iter:
             i += 1
+            if i%1000 == 0:
+                print(i)
             gen_mtx, par_check_mtx = cls.create_rand_gen_mtx_and_par_check_mtx()
             if cls.eval_mtxs(par_check_mtx):
                 print(f'Matrix found on the {i}-th iteration.')
