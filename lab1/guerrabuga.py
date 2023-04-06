@@ -60,15 +60,10 @@ class GuerraBuga:
                 code[j]= 1
                 check = (cls.parity_check_matrix@code)%2
                 check_id = cls.get_id(check)
-                # print(check_id)
-                # print(code)
-                # break
                 closest_errors[check_id] = code.copy()
                 code[j] = 0
             code[i] = 0
         cls.closest_errors = closest_errors
-        # with open('closest_errors_mtx.npy', 'wb') as closest_errors_file:
-        #             np.save(closest_errors_file, closest_errors)
         return closest_errors
 
 
@@ -149,8 +144,6 @@ class FindGenMatrix:
         i = 0
         while i < max_iter:
             i += 1
-            if i%1000 == 0:
-                print(i)
             gen_mtx, par_check_mtx = cls.create_rand_gen_mtx_and_par_check_mtx()
             if cls.eval_mtxs(par_check_mtx):
                 print(f'Matrix found on the {i}-th iteration.')
