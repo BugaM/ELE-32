@@ -8,7 +8,7 @@ class GuerraBuga:
     Class for encoding and decoding 
     """
     K = 13 # Number of message bits
-    N = K + 8
+    N = K + 10
 
     with open("gen_mtx.npy", "rb") as f:
         gen_matrix = np.load(f)
@@ -84,14 +84,14 @@ class FindGenMatrix:
     """
     Finds a suitable generator matrix for the block code.
     """
-    # Rate = 13/21 = 1.08 * 4/7
+    # Rate = 13/23 = 0.99 * 4/7
     K = 13 # Number of message bits
-    N = K + 8 # Total number of bits
+    N = K + 10 # Total number of bits
 
     # This numbers were choosen, because the rate is similar to 4/7 and
-    # the number of syndromes (2**(N-K) = 256) is less than
-    # the number of 0 errors (1) plus the number of 1 error (N = 21) plus
-    # the number of 2 erros (N*(N-1)/2 = 210), totaling 232.
+    # the number of syndromes (2**(N-K) = 1024) is greater than
+    # the number of 0 errors (1) plus the number of 1 error (N = 23) plus
+    # the number of 2 erros (N*(N-1)/2 = 253), totaling 276.
 
     # We want to find a generator matrix such that
     # each case of 0, 1 or 2 erros gives out a different syndrome.
