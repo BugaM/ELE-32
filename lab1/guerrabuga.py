@@ -63,6 +63,18 @@ class GuerraBuga:
                 closest_errors[check_id] = code.copy()
                 code[j] = 0
             code[i] = 0
+        # 3 errors (only if syndrome is not mapped to smaller error)
+        for i in range(len(code)):
+            for j in range(i):
+                for k in range(j):
+                    code[k]= 1
+                    check = (cls.parity_check_matrix@code)%2
+                    check_id = cls.get_id(check)
+                    if closest_errors[check_id] == []:
+                        closest_errors[check_id] = code.copy()
+                    code[k] = 0
+                code[j] = 0
+            code[i] = 0
         cls.closest_errors = closest_errors
         return closest_errors
 
