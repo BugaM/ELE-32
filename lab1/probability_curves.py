@@ -72,7 +72,7 @@ plt.ylabel("Pe")
 
 plt.plot(probabilities, pe_hamming, label="Hamming")
 plt.plot(probabilities, pe_gb, label="GB")
-plt.plot(probabilities, probabilities, label="No encoding")
+plt.plot(probabilities, pe_no_encoding, label="No encoding")
 plt.legend()
 
 plt.show()

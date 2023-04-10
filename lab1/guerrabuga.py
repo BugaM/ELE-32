@@ -29,16 +29,16 @@ class GuerraBuga:
             return num
 
     @classmethod
-    def decode(cls, hamming_code:np.array):
-        check = (cls.parity_check_matrix@hamming_code)%2
+    def decode(cls, guerra_buga_code:np.array):
+        check = (cls.parity_check_matrix@guerra_buga_code)%2
         check_id = cls.get_id(check)
         if not cls.closest_errors:
             cls.create_closest_errors()
         error = cls.closest_errors[check_id]
         if error != []:
-            return (hamming_code^error)[:cls.K]
+            return (guerra_buga_code^error)[:cls.K]
         else:
-            return hamming_code[:cls.K]
+            return guerra_buga_code[:cls.K]
 
     @classmethod
     def create_closest_errors(cls):
