@@ -21,5 +21,4 @@ for i=1:size(g_candidates, 1)
         best_g = g;
     end
 end
-
 end
