@@ -1,6 +1,7 @@
 function cycled_poly = cycle_poly_g(poly, g)
-%UNTITLED14 Summary of this function goes here
-%   Detailed explanation goes here
+%cycle_poly_g Rotates a polynomial with respect to g
+%   Rotates the polynomial poly one step to the right
+%   with respect to another polynomial g
 sum_factor = g(1:length(poly));
 
 poly_end = poly(end);

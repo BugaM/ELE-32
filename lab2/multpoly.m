@@ -1,5 +1,5 @@
 function product = multpoly(u, v)
-%UNTITLED12 Summary of this function goes here
-%   Detailed explanation goes here
+%multpoly Multiplies two polymials
+%   Returns u*v
 product = mod(conv(u, v), 2);
 end

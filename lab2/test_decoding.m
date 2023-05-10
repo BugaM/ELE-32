@@ -5,12 +5,8 @@ min_dist = 5;
 max_errors_fixed = (min_dist - 1)/2;
 
 % Finding code
-%[n, k, g] = find_code(rate, rate_tolerance, min_dist);
-%syndromes = syndromes_2errors(n, k, g);
-n = 17;
-k = 9;
-g = [1 0 0 1 1 1 0 0 1];
-syndromes = [64 96 80 72 68 66 65 64 14 103 83 7 45 56 50 121 92];
+[n, k, g] = find_code(rate, rate_tolerance, min_dist);
+syndromes = syndromes_2errors(n, k, g);
 
 % Encoding
 infoword = ones(1, k);

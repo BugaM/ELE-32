@@ -1,6 +1,7 @@
 function possible_u = gen_nonzero_infowords(k)
-%UNTITLED4 Summary of this function goes here
-%   Detailed explanation goes here
+%gen_nonzero_infowords Creates all non-zero infowords
+%   Creates all non-zero infowords and
+%   store each as a line in the matrix
 two_to_power_k = 2^k;
 possible_u = zeros(two_to_power_k - 1, k);
 counter = 1;
