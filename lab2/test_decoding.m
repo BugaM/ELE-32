@@ -2,6 +2,7 @@
 rate = 4/7;
 rate_tolerance = 0.1;
 min_dist = 5;
+max_errors_fixed = (min_dist - 1)/2;
 
 % Finding code
 [n, k, g] = find_code(rate, rate_tolerance, min_dist);
@@ -52,3 +53,19 @@ end
 if worked
     fprintf("Worked when there are two errors.\n")
 end
+% Testing if it doesn't loop with 3 errors
+worked = true;
+for i=1:(n-2)
+    codeword(i) = ~codeword(i);
+    for j=(i+1):(n-1)
+        codeword(j) = ~codeword(j);
+        for l=(j+1):n
+            codeword(l) = ~codeword(l);
+            infoword_dec = cycldecode(codeword, n, k, g, syndromes);
+            codeword(l) = ~codeword(l);
+        end
+        codeword(j) = ~codeword(j);
+    end
+    codeword(i) = ~codeword(i);
+end
+fprintf("Didn't loop with three errors.\n")

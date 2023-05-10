@@ -7,24 +7,32 @@ function infoword = cycldecode(codeword, n, k, g, syndromes)
 %   syndromes is a list of syndromes corresponding to erros patterns
 %   that can be fixed
 %   max_errors_fixed is the maximum amount of errors that can be fixed
-
-syndrome_1error = syndromes(1);
-syndromes_2errors = syndromes(2:end);
-
-[fixed_codeword, worked] = cycldecode_1error(codeword, n, k, g, syndrome_1error);
-
-if worked
-    codeword = fixed_codeword;
-else
-    [fixed_codeword, worked] = cycldecode_2errors(codeword, n, k, g, syndromes_2errors);
-    if worked
-        [fixed_codeword, worked] = cycldecode_1error(fixed_codeword, n, k, g, syndrome_1error);
-        if worked
-            codeword = fixed_codeword;
-        end
+counter = 0;
+rotations = 0;
+syndrome = get_syndrome(codeword, g, n, k);
+syndrome_num = syndrome2num(syndrome);
+while (syndrome_num ~= 0) && (counter < n)
+    % Known syndrome found
+    if sum(syndrome_num == syndromes) ~= 0
+        % Fix the error that is on the first position
+        counter = 0;
+        codeword(1) = ~codeword(1);
+        % Get new syndrome
+        syndrome = get_syndrome(codeword, g, n, k);
+        syndrome_num = syndrome2num(syndrome);
+    % No known syndrome found, rotate it
+    else
+        % Rotate syndrome with respect to g
+        syndrome = cycle_poly_g(syndrome, g);
+        syndrome_num = syndrome2num(syndrome);
+        % Rotate codeword
+        codeword = cycle_poly(codeword, n, 1);
+        rotations = rotations + 1;
+        counter = counter + 1;
     end
 end
-
+% Un-rotate codeword
+codeword = cycle_poly(codeword, n, -rotations);
 % Decode it
 [infoword, ~] = divpoly(codeword, g);
 infoword = infoword(1:k);
