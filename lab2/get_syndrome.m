@@ -5,10 +5,10 @@ function syndrome = get_syndrome(codeword, g, n, k)
 [~, syndrome] = divpoly(codeword, g);
 
 % Trims extra zeros if syndrome size is too large
-if length(syndrome) >= n - k - 1
-    syndrome = syndrome(1: n - k -1);
+if length(syndrome) >= n - k
+    syndrome = syndrome(1: n - k );
 % Adds zero padding if syndrome size is too small
 else
-    syndrome = [syndrome zeros(1, n - k - 1 - length(syndrome))];
+    syndrome = [syndrome zeros(1, n - k - length(syndrome))];
 end
 end
