@@ -14,6 +14,7 @@ class AbstractGraph(ABC):
         self.M = dv*N//dc
         self.max_i = N
         self.c_node_connections = None
+        self.v_node_connections = None
 
     def get_parity_check_mtx(self):
         parity_check_mtx = np.zeros((self.M, self.N), dtype=np.uint8)
@@ -52,11 +53,9 @@ class AbstractGraph(ABC):
         return code
     
     def export_graph(self, path):
-        v_node_connections = [[] for i in range(self.N)]
-        for i in range(len(self.c_node_connections)):
-            v_nodes = self.c_node_connections[i]
-            for v_n in v_nodes:
-                v_node_connections[v_n].append(i + 1)
+        v_node_connections = [
+            [c + 1 for c in v_node] for v_node in self.v_node_connections
+        ]
         np.savetxt(path, 
            v_node_connections,
            delimiter =",", 
@@ -83,4 +82,11 @@ class RandomGraph(AbstractGraph):
                 except: error = True
             if error == False:
                 break
+
         self.c_node_connections = c_node_connections
+        self.v_node_connections = [[] for _ in range(self.N)]
+        for i in range(len(self.c_node_connections)):
+            v_nodes = self.c_node_connections[i]
+            for v_n in v_nodes:
+                self.v_node_connections[v_n].append(i)
+
