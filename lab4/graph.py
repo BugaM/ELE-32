@@ -1,4 +1,5 @@
 from abc import ABC
+import csv
 import random
 from functools import reduce
 
@@ -49,11 +50,23 @@ class AbstractGraph(ABC):
                     break
                 code[node] = int(not code[node])
         return code
+    
+    def export_graph(self, path):
+        v_node_connections = [[] for i in range(self.N)]
+        for i in range(len(self.c_node_connections)):
+            v_nodes = self.c_node_connections[i]
+            for v_n in v_nodes:
+                v_node_connections[v_n].append(i + 1)
+        np.savetxt(path, 
+           v_node_connections,
+           delimiter =",", 
+           fmt ='%d')
 
 
 class RandomGraph(AbstractGraph):
     def __init__(self, dv, dc, N) -> None:
         super().__init__(dv, dc, N)
+        random.seed(10)
         while True:
             error= False
             c_node_connections = [[] for i in range(self.M)]
