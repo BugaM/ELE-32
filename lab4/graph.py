@@ -26,14 +26,14 @@ class AbstractGraph(ABC):
         def sum_v_node(v_node):
             c_connection = self.v_node_connections[v_node]
             return r_vec[v_node] + sum(
-                edge_cert[f"({v_node}, {c_node})"] for c_node in c_connection
+                edge_cert[(v_node, c_node)] for c_node in c_connection
             )
 
         assert len(r_vec) == self.N, f"Message should be of length N = {self.N}."
-        edge_cert = dict() # key: "(v_node, c_node)"
+        edge_cert = dict() # key: (v_node, c_node)
         for v_node in range(self.N):
             for c_node in self.v_node_connections[v_node]:
-                edge_cert[f"({v_node}, {c_node})"] = r_vec[v_node]
+                edge_cert[(v_node, c_node)] = r_vec[v_node]
         for _ in range(self.max_i):
             # Reset iteration state
             has_error = False
@@ -42,37 +42,37 @@ class AbstractGraph(ABC):
                 # Find sign of c node
                 sign = reduce(
                     lambda val, x: val*np.sign(x),
-                    [edge_cert[f"({v_node}, {c_node})"] for v_node in v_connection],
+                    [edge_cert[(v_node, c_node)] for v_node in v_connection],
                     1
                 )
                 if sign != 1:
                     has_error = True
-                # Find minumum absolut values of c node
-                min_val = np.inf
-                second_min_val = np.inf
+                # Find minumum absolut LLR of c node
+                min_llr = np.inf
+                second_min_llr = np.inf
                 has_two_min = False
                 for v_node in v_connection:
-                    edge_val = abs(edge_cert[f"({v_node}, {c_node})"])
-                    if edge_val == min_val:
-                        second_min_val = min_val
+                    edge_llr = abs(edge_cert[(v_node, c_node)])
+                    if edge_llr == min_llr:
+                        second_min_llr = min_llr
                         has_two_min = True
-                    elif edge_val < min_val:
-                        second_min_val = min_val
-                        min_val = edge_val
+                    elif edge_llr < min_llr:
+                        second_min_llr = min_llr
+                        min_llr = edge_llr
                         has_two_min = False
-                    elif edge_val < second_min_val:
-                        second_min_val = edge_val
+                    elif edge_llr < second_min_llr:
+                        second_min_llr = edge_llr
                         has_two_min = False
-                # Calculate sign and absolute value of each edge
+                # Calculate sign and absolute llr of each edge
                 for v_node in v_connection:
-                    edge_sign = sign*np.sign(edge_cert[f"({v_node}, {c_node})"])
-                    old_edge_val = abs(edge_cert[f"({v_node}, {c_node})"])
-                    edge_val = (
-                        min_val
-                        if has_two_min or old_edge_val != min_val
-                        else second_min_val
+                    edge_sign = sign*np.sign(edge_cert[(v_node, c_node)])
+                    old_edge_llr = abs(edge_cert[(v_node, c_node)])
+                    edge_llr = (
+                        min_llr
+                        if has_two_min or old_edge_llr != min_llr
+                        else second_min_llr
                     )
-                    edge_cert[f"({v_node}, {c_node})"] = edge_sign*edge_val
+                    edge_cert[(v_node, c_node)] = edge_sign*edge_llr
             # Code is fixed
             if not has_error:
                 break
@@ -80,8 +80,8 @@ class AbstractGraph(ABC):
             for v_node, c_connection in enumerate(self.v_node_connections):
                 node_sum = sum_v_node(v_node)
                 for c_node in c_connection:
-                    edge_cert[f"({v_node}, {c_node})"] = (
-                        node_sum - edge_cert[f"({v_node}, {c_node})"]
+                    edge_cert[(v_node, c_node)] = (
+                        node_sum - edge_cert[(v_node, c_node)]
                     )
         # Decode message
         msg = np.array(
