@@ -9,7 +9,7 @@ class AbstractGraph(ABC):
         self.dv = dv
         self.dc = dc
         self.N = N
-        assert dv*N% dc == 0, "dc must dived N*dv"
+        assert dv*N% dc == 0, "dc must divide N*dv"
         self.M = dv*N//dc
         self.max_i = max_i
         self.c_node_connections = None
@@ -26,14 +26,14 @@ class AbstractGraph(ABC):
         def sum_v_node(v_node):
             c_connection = self.v_node_connections[v_node]
             return r_vec[v_node] + sum(
-                edge_cert[(v_node, c_node)] for c_node in c_connection
+                edges_llr[(v_node, c_node)] for c_node in c_connection
             )
 
         assert len(r_vec) == self.N, f"Message should be of length N = {self.N}."
-        edge_cert = dict() # key: (v_node, c_node)
+        edges_llr = dict() # key: (v_node, c_node)
         for v_node in range(self.N):
             for c_node in self.v_node_connections[v_node]:
-                edge_cert[(v_node, c_node)] = r_vec[v_node]
+                edges_llr[v_node, c_node] = r_vec[v_node]
         for _ in range(self.max_i):
             # Reset iteration state
             has_error = False
@@ -41,38 +41,34 @@ class AbstractGraph(ABC):
             for c_node, v_connection in enumerate(self.c_node_connections):
                 # Find sign of c node
                 sign = reduce(
-                    lambda val, x: val*np.sign(x),
-                    [edge_cert[(v_node, c_node)] for v_node in v_connection],
+                    lambda val, x: val*x,
+                    map(lambda v_node: np.sign(edges_llr[v_node, c_node]), v_connection),
                     1
                 )
-                if sign != 1:
+                if sign == -1:
                     has_error = True
-                # Find minumum absolut LLR of c node
+                # Find minumum absolute LLR of c node
                 min_llr = np.inf
                 second_min_llr = np.inf
-                has_two_min = False
                 for v_node in v_connection:
-                    edge_llr = abs(edge_cert[(v_node, c_node)])
+                    edge_llr = np.abs(edges_llr[v_node, c_node])
                     if edge_llr == min_llr:
                         second_min_llr = min_llr
-                        has_two_min = True
                     elif edge_llr < min_llr:
                         second_min_llr = min_llr
                         min_llr = edge_llr
-                        has_two_min = False
-                    elif edge_llr < second_min_llr:
+                    elif edge_llr <= second_min_llr:
                         second_min_llr = edge_llr
-                        has_two_min = False
                 # Calculate sign and absolute llr of each edge
                 for v_node in v_connection:
-                    edge_sign = sign*np.sign(edge_cert[(v_node, c_node)])
-                    old_edge_llr = abs(edge_cert[(v_node, c_node)])
+                    edge_sign = sign*np.sign(edges_llr[v_node, c_node])
+                    old_edge_llr = np.abs(edges_llr[v_node, c_node])
                     edge_llr = (
                         min_llr
-                        if has_two_min or old_edge_llr != min_llr
+                        if old_edge_llr != min_llr
                         else second_min_llr
                     )
-                    edge_cert[(v_node, c_node)] = edge_sign*edge_llr
+                    edges_llr[v_node, c_node] = edge_sign*edge_llr
             # Code is fixed
             if not has_error:
                 break
@@ -80,12 +76,12 @@ class AbstractGraph(ABC):
             for v_node, c_connection in enumerate(self.v_node_connections):
                 node_sum = sum_v_node(v_node)
                 for c_node in c_connection:
-                    edge_cert[(v_node, c_node)] = (
-                        node_sum - edge_cert[(v_node, c_node)]
+                    edges_llr[v_node, c_node] = (
+                        node_sum - edges_llr[v_node, c_node]
                     )
         # Decode message
         msg = np.array(
-            [1 if sum_v_node(v_node) > 0 else 0 for v_node in range(self.N)],
+            [1 if sum_v_node(v_node) < 0 else 0 for v_node in range(self.N)],
             dtype=np.int8
         )
         return msg
