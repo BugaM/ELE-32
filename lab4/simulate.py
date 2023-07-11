@@ -1,20 +1,23 @@
 import pickle as pkl
 import numpy as np
-from math import ceil
-from bsc import bsc
+from hamming import Hamming
+from bsc import  gauss_channel_signal
 from graph import RandomGraph
 
 SIZE = 201782
-MAX_SIZE = SIZE * 50
-P = [0.05,0.02,0.01]
-WORD_SIZES = [98, 203, 497, 994]
+MAX_SIZE = SIZE
 
-def get_probabilities(P):
-      p = [0.1]
-      while P[-1] >= 10**-5:
-            p += P
-            P = [x/10 for x in P]
-      return p
+HAMMING_K = 4
+EB = 1
+
+EB_NO_DB = np.linspace(0,5,11)
+
+
+def get_NO(eb, eb_no_db):
+      eb_n0 = 10**(eb_no_db/10)
+      n0 = eb/eb_n0
+      return n0
+
 
 
 def bit_error_rate(info_bits, estimated_bits):
@@ -23,29 +26,33 @@ def bit_error_rate(info_bits, estimated_bits):
       errors = np.count_nonzero(xor)
       return errors/bit_number
 
-
-probabilities = get_probabilities(P)
-
 pe_list = []
 
-for word_size in WORD_SIZES:
-      graph = RandomGraph(3, 7, word_size)
-      pe = []
-      for p in probabilities:
-            chebishev = ceil(8000/p)
-            chebishev = chebishev + word_size - chebishev%word_size
-            num_bits = min(chebishev, MAX_SIZE)
-            infoword = np.zeros(num_bits, dtype="int64")
-            blocks = np.split(infoword, num_bits/word_size)
-            print(f"{word_size} -- {p} -- {num_bits}")
-            decode = []
-            for block in blocks:
-                  noised_signal = bsc(block, p) 
-                  decode.append(graph.decode(noised_signal))
-            pe.append(bit_error_rate(infoword, np.concatenate(decode).ravel()))
-      pe_list.append(pe)
+word_size = 98
+graph = RandomGraph(3, 7, word_size, 10)
+ei_n0 = []
+
+pe_hamming = []
+pe = []
+for ratio in EB_NO_DB:
+      num_bits = (MAX_SIZE)
+      n0 = get_NO(EB, ratio)
+      Ei = EB/(4/7)
+      infoword = np.zeros(num_bits, dtype="int64")
+
+      blocks = np.split(infoword, num_bits/word_size)
+      print(f"{word_size} -- {ratio} -- {num_bits}")
+      decode = []
+      for block in blocks:
+            noised_signal = gauss_channel_signal(block, n0) 
+            decode.append(graph.decode(noised_signal))
+      ei_n0.append(Ei/n0)
+      pe.append(bit_error_rate(infoword, np.concatenate(decode).ravel()))
+pe_list.append(pe)
 
 print(pe_list)
 
-with open("graph.pkl", "wb") as f:
+with open("ldpc_gaussian.pkl", "wb") as f:
       pkl.dump(pe_list, f)
+with open("ei_no_gaussian.pkl", "wb") as f:
+      pkl.dump(ei_n0, f)
