@@ -40,19 +40,32 @@ with open("no_encoding.pkl", "rb") as fp:   #Pickling
       pe_no_encoding = pickle.load(fp)
 
 
-pe_cycling = [0.500749906261717, 0.278515185601800, 0.0912738590767615,
-               0.0197060036749541, 0.00166247921900976, 0.000254999681250398, 
-               2.99999625000469e-05, 4.99999375000781e-06, 6.24999921875010e-07, 
-               1.87499976562503e-07, 0, 0]
+# pe_cycling = [0.500749906261717, 0.278515185601800, 0.0912738590767615,
+#                0.0197060036749541, 0.00166247921900976, 0.000254999681250398, 
+#                2.99999625000469e-05, 4.99999375000781e-06, 6.24999921875010e-07, 
+#                1.87499976562503e-07, 0, 0]
 
-ssr_cycling = [db(prob_to_ssr(p, (9/17))) for p in probabilities]
+# ssr_cycling = [db(prob_to_ssr(p, (9/17))) for p in probabilities]
 
 
-bf_probabilities = get_bitflipping_probs(P_BF)
+bf_probabilities = get_bitflipping_probs(P)
+pe_bitflipping = [0.49668599834299915,
+ 0.3808460519212838,
+ 0.3103062821372681,
+ 0.3039968204287453,
+ 0.24331079645575315,
+ 0.0196264435246716,
+ 0.0009885399352637565,
+ 7.99830036117325e-05,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0]
 
-with open("bitflipping.pkl", "rb") as fp:
-      pe_bitflipping_list = pickle.load(fp)
-      pe_bitflipping = pe_bitflipping_list[3]
 ssr_bf = [db(prob_to_ssr(p, (4/7))) for p in bf_probabilities]
 
 
@@ -67,8 +80,8 @@ ax.set_xlim(0,5)
 
 plt.plot(ssr_hamming, pe_hamming[:len(ssr_hamming)], label="Hamming")
 plt.plot(ssr_no_encoding, pe_no_encoding[:len(ssr_no_encoding)], label="No encoding")
-plt.plot(ssr_cycling, pe_cycling[:len(ssr_cycling)], label="Cycling")
-plt.plot(ssr_bf, pe_bitflipping, label="Bit flipping N=994")
+# plt.plot(ssr_cycling, pe_cycling[:len(ssr_cycling)], label="Cycling")
+plt.plot(ssr_bf, pe_bitflipping[:len(ssr_bf)], label="Bit flipping N=994")
 plt.legend()
 plt.grid()
 
